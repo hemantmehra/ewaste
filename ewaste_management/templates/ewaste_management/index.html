@@ -1,0 +1,145 @@
+<html>
+	<head>
+		 <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>E-Waste Junction</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    
+        <link rel="stylesheet" href="styles.css">
+
+	</head>
+	<body style = "background-image:url('./download1.jpg') ; height: 100%; background-position: center; background-repeat: no-repeat;background-size: cover;">
+
+		{% if user.is_authenticated %}
+		Hi {{ user.username }}!
+		 <div class="container" style = "color : #F000F0 "  >
+
+            <i style = "font-size:70px ; color : #000000 ">E-Waste Junction</i>
+ 
+			<form method="post" enctype="multipart/form-data">
+		    {% csrf_token %}
+		    <div>
+		    	<select name="device_type" id="">
+			    	{% for device in devices %}
+			   			<option value="{{device.0}}">{{device.1}}</option>
+			  		{% endfor %}
+			    </select>
+		    </div>
+		    <div>
+		    	<select name="brand" id="">
+			    	{% for brand in brands %}
+			   			<option value="{{brand.0}}">{{brand.1}}</option>
+			  		{% endfor %}
+			    </select>
+		    </div>
+		    <div>
+		    	<select name="model" id="">
+			    	{% for model in models %}
+			   			<option value="{{model.0}}">{{model.1}}</option>
+			  		{% endfor %}
+			    </select>	
+		    </div>
+		    <input type="file" name="device">
+		    <button type="submit">Upload</button>
+		</form>
+
+            <h3 class="no-browser-support"></h3>
+
+            <div class="app"> 
+                <i style = "font-size:40px ;">What's your Query ?</i>
+                <div class="input-single">
+                    <textarea id="note-textarea" placeholder="Create a new note by typing or using voice recognition." rows="6"></textarea>
+                </div>         
+                <button class = "btn btn-primary" id="start-record-btn" title="Start Recording">Start recording</button>
+                <button class = "btn btn-primary" id="pause-record-btn" title="Pause Recording">Pause Recording</button>
+                <button class = "btn btn-primary" id="save-note-btn" title="Save Note">send node</button>   
+                <p id="recording-instructions">Press the <strong>Start Recording</strong> button and allow access.</p>
+                
+                <h3>Response</h3>
+                <ul id="response">
+                    <li>
+                        <p class="no-notes">You don't have any query.</p>
+                    </li>
+                </ul>
+
+            </div>
+			
+			
+			
+            <audio id="recordedAudio"></audio>
+        </div>
+        <p><a href="{% url 'logout' %}">logout</a></p>
+        {% else %}
+  <p>You are not logged in</p>
+  <a href="{% url 'login' %}">login</a>
+{% endif %}
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <!-- <script src="script.js"></script> -->
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+
+        <!-- Only used for the demos ads. Please ignore and remove. --> 
+        <script src="https://cdn.tutorialzine.com/misc/enhance/v3.js" async></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+        <script>
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                    .then(stream => {
+                        const mediaRecorder = new MediaRecorder(stream);
+                        let start = document.getElementById("start-record-btn")
+                        let stop = document.getElementById("pause-record-btn")
+                        let recorded = document.getElementById("recordedAudio")
+                        let chunks = []
+                        start.addEventListener('click',(ev)=>{
+                            mediaRecorder.start();
+                            console.log("start")
+                        });
+                        stop.addEventListener('click',(ev)=>{
+                            mediaRecorder.stop();
+                            console.log("stop")
+                            console.log(mediaRecorder.state);
+                        });
+                        mediaRecorder.ondataavailable = function(ev){
+                            chunks.push(ev.data);
+                            // console.log();
+                        }
+                        mediaRecorder.onstop = (ev)=>{
+                            let blob = new Blob(chunks, {'type': 'audio/wav'});
+                            recorded.src = URL.createObjectURL(blob)
+                            console.log(blob);
+                            recorded.controls = true;
+                            recorded.autoplay = true;
+                            chunks = []
+                            var fd = new FormData();
+                            fd.append('fname', 'test.wav');
+                            fd.append('data', blob);
+                            console.log(fd)
+                            $.ajax({
+                                type: 'POST',
+                                url: 'http://127.0.0.1:5000/',
+                                data: fd,
+                                processData: false,
+                                contentType: false
+                            }).done(function(data) {
+                                console.log(data);
+                            });
+                        }
+                    });
+            </script>
+
+            <script>
+                $("#save-note-btn").click(function(){
+                    var text = $("#note-textarea").val();
+                    $.post('http://127.0.0.1:5000/index', {'text': text}, function(data, status){
+                        $(".no-notes").text(data);
+                    });
+                });
+            </script>
+           			
+	</body>
+</html>
+	

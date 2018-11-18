@@ -1,0 +1,44 @@
+<style>
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 75%;
+}
+
+td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+tr:nth-child(even) {
+    background-color: #dddddd;
+}
+</style>
+{% if uploaded_file_url %}
+    <!-- <p>File uploaded at: <a href="{{ uploaded_file_url }}">{{ uploaded_file_url }}</a></p> -->
+    <!-- <img src="{{ uploaded_file_url }}" alt="" style="width: 500px"> -->
+    <h1>{{ device_type }}</h1>
+    <p>{{ brand }} - {{ model }}</p>
+    <p>INR: {{ price }}</p>
+    <table>
+    	<col width="200">
+    	 <col width="500">
+    	<tr>
+    		<th>Element</th>
+    		<th>Effects</th>
+    	</tr>
+    	{% for element, effect in elements %}
+    		<tr>
+    			<td>
+    				{{ element }}
+    			</td>
+    			<td>
+    				{{ effect }}
+    			</td>
+    		</tr>
+    		
+		{% endfor %}
+    </table>
+    
+{% endif %}
